@@ -17,12 +17,6 @@ type TaskHandler struct {
 func NewTaskHandler(storage tasks.TaskStorage) *TaskHandler {
 	return &TaskHandler{
 		storage: storage,
-<<<<<<< HEAD
-
-	// ВОПРОС: Зачем возвращать указатель, а не значение?
-	// ВОПРОС: Почему storage публичное поле, а не приватное?
-=======
->>>>>>> 76e41d7 (добавил мьютексы)
 	}
 }
 
@@ -37,20 +31,9 @@ type TaskRequest struct {
 	Description string `json:"description"`
 }
 
-<<<<<<< HEAD
-
-// CreateTask создает новую задачу
-func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
-
-// ВОПРОС: Почему лучще использовать отдельный TaskRequest, а не использовать Task напрямую?
-	
-	var req TaskRequest
-
-=======
 // CreateTask создает новую задачу
 func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	var req TaskRequest
->>>>>>> 76e41d7 (добавил мьютексы)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.writeError(w, "invalid JSON", http.StatusBadRequest)
 		return
@@ -66,10 +49,6 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		Description: req.Description,
 	}
 
-<<<<<<< HEAD
-	// ВОПРОС. Использовал контекст, но не понял зачем он тут
-=======
->>>>>>> 76e41d7 (добавил мьютексы)
 	ctx := r.Context()
 	if err := h.storage.Create(ctx, task); err != nil {
 		h.writeError(w, "failed to create task", http.StatusInternalServerError)
