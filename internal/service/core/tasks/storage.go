@@ -16,6 +16,8 @@ type TaskStorage interface {
 	GetAll(ctx context.Context) ([]*Task, error)
 	Update(ctx context.Context, task *Task) error
 	Delete(ctx context.Context, id int) error
+
+	// ВОПРОС: Зачем в каждом методе передавать context.Context, по заданию нужно было, но не понял зачем тут
 }
 
 // InMemoryStorage реализация TaskStorage в памяти
