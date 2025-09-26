@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"errors"
+	"sync"
 )
 
 var (
@@ -24,6 +25,7 @@ type TaskStorage interface {
 type InMemoryStorage struct {
 	tasks  map[int]*Task
 	nextID int
+	mu     sync.RWMutex
 }
 
 // NewInMemoryStorage создает новое хранилище в памяти
@@ -35,6 +37,8 @@ func NewInMemoryStorage() *InMemoryStorage {
 }
 
 func (s *InMemoryStorage) Create(ctx context.Context, task *Task) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	task.ID = s.nextID
 	s.tasks[s.nextID] = task
 	s.nextID++
