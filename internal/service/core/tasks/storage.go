@@ -66,6 +66,7 @@ func (s *InMemoryStorage) GetByID(ctx context.Context, id int) (*Task, error) {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
+
 	}
 
 	// Ищем задачу
