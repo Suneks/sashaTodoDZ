@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	apiTasks "toDo/internal/service/api/tasks"   // алиас для API
-	coreTasks "toDo/internal/service/core/tasks" // алиас для core
+	apiTasks "toDo/internal/service/api/tasks"
+	coreTasks "toDo/internal/service/core/tasks"
 )
 
 func main() {
