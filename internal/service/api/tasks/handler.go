@@ -10,11 +10,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// TaskHandlerInterface - интерфейс для хендлера
+type TaskHandlerInterface interface {
+	CreateTask(w http.ResponseWriter, r *http.Request)
+	GetAllTasks(w http.ResponseWriter, r *http.Request)
+	GetTaskByID(w http.ResponseWriter, r *http.Request)
+	UpdateTask(w http.ResponseWriter, r *http.Request)
+	DeleteTask(w http.ResponseWriter, r *http.Request)
+}
+
 type TaskHandler struct {
 	storage tasks.TaskStorage
 }
 
-func NewTaskHandler(storage tasks.TaskStorage) *TaskHandler {
+func NewTaskHandler(storage tasks.TaskStorage) TaskHandlerInterface {
 	return &TaskHandler{
 		storage: storage,
 	}
