@@ -36,16 +36,16 @@ func NewInMemoryStorage() *InMemoryStorage {
 
 // Create создает новую задачу
 func (s *InMemoryStorage) Create(ctx context.Context, task *Task) error {
+	// Перед захватом
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	default:
+	}
+
 	// Блокируем на запись - только одна горутина может писать
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
-	// Проверяем, не отменили ли контекст
-	select {
-	case <-ctx.Done():
-		return ctx.Err() // Возвращаем ошибку отмены/таймаута
-	default:
-	}
 
 	// Присваиваем ID и сохраняем задачу
 	task.ID = s.nextID
@@ -57,17 +57,15 @@ func (s *InMemoryStorage) Create(ctx context.Context, task *Task) error {
 
 // GetByID получает задачу по ID
 func (s *InMemoryStorage) GetByID(ctx context.Context, id int) (*Task, error) {
-	// Блокируем на чтение - если много горутин могут читать одновременно
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	// Проверяем контекст
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
-
 	}
+
+	// Блокируем на чтение - если много горутин могут читать одновременно
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	// Ищем задачу
 	task, exists := s.tasks[id]
@@ -75,21 +73,27 @@ func (s *InMemoryStorage) GetByID(ctx context.Context, id int) (*Task, error) {
 		return nil, ErrTaskNotFound
 	}
 
-	return task, nil
+	// Копия (вместо оригинала)
+	copiedTask := &Task{
+		ID:          task.ID,
+		Title:       task.Title,
+		Description: task.Description,
+	}
+
+	return copiedTask, nil
 }
 
 // GetAll получает все задачи
 func (s *InMemoryStorage) GetAll(ctx context.Context) ([]*Task, error) {
-	// Блокируем на чтение
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
-	// Проверяем контекст
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	default:
 	}
+
+	// Блокируем на чтение
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
 	// Создаем копию списка задач
 	tasks := make([]*Task, 0, len(s.tasks))
@@ -100,7 +104,13 @@ func (s *InMemoryStorage) GetAll(ctx context.Context) ([]*Task, error) {
 			return nil, ctx.Err()
 		default:
 		}
-		tasks = append(tasks, task)
+		// Копия
+		copiedTask := &Task{
+			ID:          task.ID,
+			Title:       task.Title,
+			Description: task.Description,
+		}
+		tasks = append(tasks, copiedTask)
 	}
 
 	return tasks, nil
@@ -108,16 +118,15 @@ func (s *InMemoryStorage) GetAll(ctx context.Context) ([]*Task, error) {
 
 // Update обновляет задачу
 func (s *InMemoryStorage) Update(ctx context.Context, task *Task) error {
-	// Блокируем на запись
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	// Проверяем контекст
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
 	}
+
+	// Блокируем на запись
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	// Проверяем, существует ли задача
 	if _, exists := s.tasks[task.ID]; !exists {
@@ -132,16 +141,15 @@ func (s *InMemoryStorage) Update(ctx context.Context, task *Task) error {
 
 // Delete удаляет задачу
 func (s *InMemoryStorage) Delete(ctx context.Context, id int) error {
-	// Блокируем на запись
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	// Проверяем контекст
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
 	default:
 	}
+
+	// Блокируем на запись
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
 	if _, exists := s.tasks[id]; !exists {
 		return ErrTaskNotFound
