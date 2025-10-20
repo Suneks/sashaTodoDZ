@@ -10,16 +10,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// TaskHandlerInterface - интерфейс для хендлера
+type TaskHandlerInterface interface {
+	CreateTask(w http.ResponseWriter, r *http.Request)
+	GetAllTasks(w http.ResponseWriter, r *http.Request)
+	GetTaskByID(w http.ResponseWriter, r *http.Request)
+	UpdateTask(w http.ResponseWriter, r *http.Request)
+	DeleteTask(w http.ResponseWriter, r *http.Request)
+}
+
 type TaskHandler struct {
 	storage tasks.TaskStorage
 }
 
-func NewTaskHandler(storage tasks.TaskStorage) *TaskHandler {
+func NewTaskHandler(storage tasks.TaskStorage) TaskHandlerInterface {
 	return &TaskHandler{
 		storage: storage,
-
-	// ВОПРОС: Зачем возвращать указатель, а не значение?
-	// ВОПРОС: Почему storage публичное поле, а не приватное?
 	}
 }
 
@@ -34,14 +40,9 @@ type TaskRequest struct {
 	Description string `json:"description"`
 }
 
-
 // CreateTask создает новую задачу
 func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
-
-// ВОПРОС: Почему лучще использовать отдельный TaskRequest, а не использовать Task напрямую?
-	
 	var req TaskRequest
-
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.writeError(w, "invalid JSON", http.StatusBadRequest)
 		return
@@ -57,7 +58,6 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		Description: req.Description,
 	}
 
-	// ВОПРОС. Использовал контекст, но не понял зачем он тут
 	ctx := r.Context()
 	if err := h.storage.Create(ctx, task); err != nil {
 		h.writeError(w, "failed to create task", http.StatusInternalServerError)
